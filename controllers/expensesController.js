@@ -1,0 +1,40 @@
+const Expense = require('../models/expenseModel')
+
+// Expenses
+exports.addExpense = (req, res) => {
+    // Validate request
+    if (!req.body.expenseName || !req.body.expensePrice || !req.body.numberOfItemsBought ) {
+        return res.status(400).send({
+            message: "Please enter a value"
+        });
+    }
+
+    // Create an expenserecord
+    const record = new Expense({
+        expenseName: req.body.expenseName,
+        expensePrice: req.body.expensePrice,
+        numberOfItemsBought: req.body.numberOfItemsBought,
+        date: Date.now()
+    });
+
+    // Save Note in the database
+    record.save()
+        .then(data => {
+            res.send(data);
+        }).catch(err => {
+            res.status(500).send({
+                message: err.message || "Some error occurred while creating the Record."
+            });
+        });
+};
+
+// Retrieve and return all expenses from the database.
+exports.findAll = (req, res) => {
+    Expense.find()
+        .then(expenses => {
+            res.send(expenses);
+        }).catch(err => {
+            res.status(500).send("Some error occurred while retrieving expenses."
+            );
+        });
+};
