@@ -3,7 +3,7 @@ const Expense = require('../models/expenseModel')
 // Expenses
 exports.addExpense = (req, res) => {
     // Validate request
-    if (!req.body.expenseName || !req.body.expensePrice || !req.body.numberOfItemsBought ) {
+    if (!req.body.expenseName || !req.body.expensePrice || !req.body.numberOfItemsBought || !req.body.unitOfMeasurement) {
         return res.status(400).send({
             message: "Please enter a value"
         });
@@ -13,8 +13,9 @@ exports.addExpense = (req, res) => {
     const record = new Expense({
         expenseName: req.body.expenseName,
         expensePrice: req.body.expensePrice,
+        unitOfMeasurement: req.body.unitOfMeasurement,
         numberOfItemsBought: req.body.numberOfItemsBought,
-        date: Date.now()
+        date: new Date()
     });
 
     // Save Note in the database

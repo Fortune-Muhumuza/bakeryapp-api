@@ -4,7 +4,7 @@ const TransactionRecord = require('../models/transactionHistory.js');
 // Create and Save a new food item
 exports.create = (req, res) => {
     // Validate request
-    if (!req.body.foodItemName || !req.body.foodItemPrice) {
+    if (!req.body.foodItemName || !req.body.foodItemPrice || !req.body.numberOfFoodItems || !req.body.foodItemProfit) {
         return res.status(400).send({
             message: "Please enter a value"
         });
@@ -16,7 +16,7 @@ exports.create = (req, res) => {
         foodItemPrice: req.body.foodItemPrice,
         numberOfFoodItems: req.body.numberOfFoodItems,
         foodItemProfit: req.body.foodItemProfit,
-        date: Date.now()
+        date: new Date()
     });
 
     // Save Note in the database
@@ -42,6 +42,87 @@ exports.findAll = (req, res) => {
             );
         });
 };
+
+// Retrieve and return all transactions from the database.
+exports.findAllSellTransactions = (req, res) => {
+  TransactionRecord.find()
+      .then(sellTransactions => {
+          res.send(sellTransactions);
+      }).catch(err => {
+          res.status(500).send("Some error occurred while retrieving records."
+          );
+      });
+};
+
+//Sum total money generated from sales, note that this is not profit.
+exports.sumMoneyFromSales = (req, res) => {
+  TransactionRecord.aggregate(
+    [
+      {
+        $group: {
+          _id: null,
+          sumOfAllFoodPrices: {
+            $sum: "$foodItemPrice",
+          },
+          sumOfSoldFoodItems:{
+            $sum: "$numberOfFoodItemsSold"
+          }
+        }
+      }
+    ],
+    function(err, result) {
+      if (err) {
+        res.send(err);
+      } else {
+        res.json(result);
+      }
+    }
+  );
+};
+
+// Retrieve and return all food item names from the database.
+exports.findFoodItemNames = (req, res) => {
+    FoodItem.aggregate(
+        [
+          {
+            $group: {
+              _id: "$foodItemName",
+              
+            }
+          }
+        ],
+        function(err, result) {
+          if (err) {
+            res.send(err);
+          } else {
+            res.json(result);
+          }
+        })
+};
+
+exports.sumOfAllFoodItems = (req, res) => {
+
+    FoodItem.aggregate(
+    [
+      {
+        $group: {
+          _id: null,
+          total: {
+            $sum: "$numberOfFoodItems"
+          }
+        }
+      }
+    ],
+    function(err, result) {
+      if (err) {
+        res.send(err);
+      } else {
+        res.json(result);
+      }
+    }
+  );
+
+}
 
 //sell food item
 exports.sellFoodItem = async (req, res) => {
@@ -75,16 +156,49 @@ exports.sellFoodItem = async (req, res) => {
         //save a record of the transaction
         let newTransaction = await TransactionRecord.create({
             foodItemName: req.body.foodItemName,
-            foodItemPrice: req.body.foodItemPrice,
+            foodItemPrice: foodItem.foodItemPrice,
             numberOfFoodItemsSold: req.body.numberOfFoodItems,
-            foodItemProfit: req.body.foodItemProfit,
-            date: Date.now()
+            foodItemProfit: foodItem.foodItemProfit,
+            date: new Date()
         });
 
         res.send(newTransaction)
     }
 };
 
+
+// Update a food item identified by the foodItemId in the request
+exports.updateFoodItem = (req, res) => {
+  // Validate Request
+  if (!req.body.foodItemName || !req.body.numberOfFoodItems) {
+      return res.status(400).send({
+          message: "Please enter both fields"
+      });
+  }
+
+  // Find fooditem and update it with the request body
+  FoodItem.findByIdAndUpdate(req.params.foodItemId, {
+    foodItemName: req.body.foodItemName,
+    numberOfFoodItems: req.body.numberOfFoodItems
+  }, { new: true })
+      .then(foodItem => {
+          if (!foodItem) {
+              return res.status(404).send({
+                  message: "Food item not found with id " + req.params.foodItemId
+              });
+          }
+          res.send(foodItem);
+      }).catch(err => {
+          if (err.kind === 'ObjectId') {
+              return res.status(404).send({
+                  message: "food item not found with id " + req.params.foodItemId
+              });
+          }
+          return res.status(500).send({
+              message: "Error updating food item with id " + req.params.foodItemId
+          });
+      });
+};
 
 
 

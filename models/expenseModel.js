@@ -7,6 +7,9 @@ const expenseRecord = mongoose.Schema({
     expensePrice: {
         type: Number,
     },
+    unitOfMeasurement: {
+        type: String,
+    },
     numberOfItemsBought: {
         type: Number,
     },

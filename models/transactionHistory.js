@@ -14,6 +14,9 @@ const transactionRecord = mongoose.Schema({
     numberOfFoodItemsSold: {
       type: Number,
     },
+    soldBy: {
+      type: String
+    },
     date:{
       type: String,
     }
