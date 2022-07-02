@@ -32,6 +32,9 @@ module.exports = (app) => {
     // Retrieve all expenses
     app.get('/expenses', expenses.findAll);
 
+    // Sum expenses
+    app.get('/sumExpenses', expenses.sumExpensesPrice);
+
     //retrieve group members
     //app.get('/group/:groupName', group.findGroupMembers);
 }
