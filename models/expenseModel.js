@@ -13,6 +13,9 @@ const expenseRecord = mongoose.Schema({
     numberOfItemsBought: {
         type: Number,
     },
+    moneyUsed: {
+        type: Number
+    },
     date: {
         type: String,
     }
